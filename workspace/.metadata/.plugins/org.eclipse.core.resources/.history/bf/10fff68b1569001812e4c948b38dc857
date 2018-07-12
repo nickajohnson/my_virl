@@ -1,0 +1,1664 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<topology xmlns="http://www.cisco.com/VIRL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" schemaVersion="0.95" xsi:schemaLocation="http://www.cisco.com/VIRL https://raw.github.com/CiscoVIRL/schema/v0.95/virl.xsd">
+    <extensions>
+        <entry key="AutoNetkit.address_family" type="String">v4</entry>
+        <entry key="AutoNetkit.ipv4_loopback_subnet" type="String">192.168.50.224</entry>
+        <entry key="AutoNetkit.ipv4_infra_subnet" type="String">192.168.56.128</entry>
+        <entry key="AutoNetkit.ipv4_infra_prefix" type="String">/26</entry>
+        <entry key="AutoNetkit.ipv4_loopback_prefix" type="String">27</entry>
+        <entry key="AutoNetkit.ipv4_vrf_loopback_subnet" type="String">10.247.58.1</entry>
+        <entry key="AutoNetkit.enable_cdp" type="Boolean">true</entry>
+        <entry key="management_lxc" type="Boolean">true</entry>
+        <entry key="management_network" type="String">flat</entry>
+    </extensions>
+    <node name="physec-zr-01" type="SIMPLE" subtype="IOSv" location="228,41" ipv4="192.168.50.129">
+        <extensions>
+            <entry key="AutoNetkit.mgmt_ip" type="string"></entry>
+            <entry key="AutoNetkit.ibgp_role" type="String">RR</entry>
+            <entry key="AutoNetkit.tunnel_enabled_ipv6" type="Boolean">true</entry>
+            <entry key="AutoNetkit.ASN" type="Integer">65520</entry>
+            <entry key="AutoNetkit.IGP" type="String">ospf</entry>
+            <entry key="AutoNetkit.RR_cluster" type="String">100</entry>
+            <entry key="config" type="String">!
+! Last configuration change at 12:33:30 UTC Mon Jun 4 2018
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname physec-zr-01
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition Mgmt-intf
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family ipv6
+ exit-address-family
+!
+enable password cisco
+!
+no aaa new-model
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip domain name virl.info
+ip cef
+ipv6 unicast-routing
+ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+template peer-policy
+!
+!
+!
+username cisco privilege 15 secret 5 $1$3pHD$VK5negfS1cuXdcgF8e6jN.
+!
+redundancy
+!
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ description Loopback
+ ip address 192.168.50.129 255.255.255.255
+ ip pim sparse-mode
+!
+interface GigabitEthernet0/0
+ description OOB Management
+ vrf forwarding Mgmt-intf
+ ip address 172.16.1.139 255.255.255.0
+ duplex full
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1
+ description to c93108-stesu-physec-tor3
+ ip address 10.0.128.1 255.255.255.252
+ ip ospf cost 1
+ duplex full
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/2
+ description to c93108-stesu-physec-dist1
+ ip address 10.0.128.8 255.255.255.254
+ ip pim sparse-mode
+ ip ospf cost 1
+ duplex full
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ description GigabitEthernet0/3
+ no ip address
+ duplex full
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/4
+ description GigabitEthernet0/4
+ no ip address
+ duplex full
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/5
+ description GigabitEthernet0/5
+ no ip address
+ duplex full
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/6
+ description GigabitEthernet0/6
+ no ip address
+ duplex full
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/7
+ description to c93108-stesu-physec-tor4
+ ip address 10.0.128.5 255.255.255.252
+ ip ospf cost 1
+ duplex full
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/8
+ description GigabitEthernet0/8
+ no ip address
+ duplex full
+ speed auto
+ media-type rj45
+!
+router ospf 65520
+ passive-interface Loopback0
+ network 10.0.0.12 0.0.0.3 area 0
+ network 10.0.128.0 0.0.0.3 area 0
+ network 10.0.128.4 0.0.0.3 area 0
+ network 192.168.50.129 0.0.0.0 area 0
+!
+router bgp 65520
+ template peer-policy vtep
+  route-reflector-client
+ exit-peer-policy
+ !
+ bgp router-id 192.168.50.129
+ bgp log-neighbor-changes
+ neighbor 192.168.50.223 remote-as 65520
+ neighbor 192.168.50.231 remote-as 65520
+ !
+ address-family ipv4
+  network 192.168.50.129 mask 255.255.255.255
+  neighbor 192.168.50.223 activate
+  neighbor 192.168.50.231 activate
+ exit-address-family
+ !
+ address-family l2vpn evpn
+  neighbor 192.168.50.223 activate
+  neighbor 192.168.50.223 inherit peer-policy vtep
+  neighbor 192.168.50.231 activate
+  neighbor 192.168.50.231 inherit peer-policy vtep
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip route 192.168.50.223 255.255.255.255 GigabitEthernet0/2
+ip ssh server algorithm encryption aes128-ctr aes192-ctr aes256-ctr
+ip ssh server algorithm authentication password
+ip ssh client algorithm encryption aes128-ctr aes192-ctr aes256-ctr
+!
+ipv6 ioam timestamp
+!
+!
+!
+control-plane
+!
+banner exec `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner incoming `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner login `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+!
+line con 0
+ password cisco
+line aux 0
+line vty 0 4
+ exec-timeout 720 0
+ password cisco
+ login local
+ transport input telnet ssh
+!
+no scheduler allocate
+!
+end</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/1" ipv4="10.0.128.1" netPrefixLenV4="30"/>
+        <interface id="1" name="GigabitEthernet0/2" ipv4="10.0.0.13" netPrefixLenV4="30"/>
+        <interface id="2" name="GigabitEthernet0/3"/>
+        <interface id="3" name="GigabitEthernet0/4"/>
+        <interface id="4" name="GigabitEthernet0/5"/>
+        <interface id="5" name="GigabitEthernet0/6"/>
+        <interface id="6" name="GigabitEthernet0/7" ipv4="10.0.128.5" netPrefixLenV4="30"/>
+        <interface id="7" name="GigabitEthernet0/8"/>
+    </node>
+    <node name="c93108-stesu-physec-tor3" type="SIMPLE" subtype="NX-OSv 9000" location="86,145" ipv4="192.168.50.231">
+        <extensions>
+            <entry key="AutoNetkit.mgmt_ip" type="string"></entry>
+            <entry key="AutoNetkit.ASN" type="Integer">65520</entry>
+            <entry key="AutoNetkit.IGP" type="String">ospf</entry>
+            <entry key="AutoNetkit.ibgp_role" type="String">RRC</entry>
+            <entry key="config" type="String">!Command: show running-config
+!Time: Tue Jun  5 22:16:17 2018
+
+version 7.0(3)I7(1)
+hostname c93108-stesu-physec-tor3
+vdc c93108-stesu-physec-tor3 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource u4route-mem minimum 96 maximum 96
+  limit-resource u6route-mem minimum 24 maximum 24
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+feature telnet
+cfs eth distribute
+nv overlay evpn
+feature ospf
+feature bgp
+feature pim
+feature interface-vlan
+feature vn-segment-vlan-based
+feature vpc
+feature nv overlay
+
+no password strength-check
+username admin password 5 $1$KuOSBsvW$Cy0TSD..gEBGBPjzpDgf51  role network-admin
+username adminbackup password 5 !  role network-operator
+username cisco password 5 $1$Nk7ZkwH0$fyiRmMMfIheqE3BqvcL0C1  role network-operator
+username cisco role network-admin
+username lab password 5 $1$buoy/oqy$.EXQz8rCn72ii8qtdldj00  role network-admin
+ip domain-lookup
+snmp-server user lab network-admin auth md5 0x5ceb414591539ee35159fca86fdfa101 priv 0x5ceb414591539ee35159fca86fdfa101 localizedkey
+snmp-server user admin network-admin auth md5 0x328945d53e05e8e7207f8c20b142f0b7 priv 0x328945d53e05e8e7207f8c20b142f0b7 localizedkey
+snmp-server user cisco network-operator auth md5 0x55b3c64a53fb95518e75358ee75e82e9 priv 0x55b3c64a53fb95518e75358ee75e82e9 localizedkey
+rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
+rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
+rmon event 4 log trap public description WARNING(4) owner PMON@WARNING
+rmon event 5 log trap public description INFORMATION(5) owner PMON@INFO
+
+fabric forwarding anycast-gateway-mac 2020.0000.00aa
+ip pim ssm range 232.0.0.0/8
+vlan 1,2200-2201
+vlan 2200
+  vn-segment 10002200
+vlan 2201
+  name hqsrvcore
+  vn-segment 1002201
+
+vrf context management
+vrf context physec
+  vni 10002200
+  rd auto
+  address-family ipv4 unicast
+    route-target both auto
+    route-target both auto evpn
+  address-family ipv6 unicast
+    route-target both auto
+    route-target both auto evpn
+hardware forwarding unicast trace
+vpc domain 34
+
+
+interface Vlan1
+
+interface Vlan2200
+  no shutdown
+  vrf member physec
+  no ip redirects
+  ip forward
+
+interface Vlan2201
+  no shutdown
+  vrf member physec
+  ip address 10.247.58.1/24
+  fabric forwarding mode anycast-gateway
+
+interface port-channel99
+  switchport mode trunk
+
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback1
+  member vni 1002201
+    mcast-group 231.10.22.1
+  member vni 10002200 associate-vrf
+
+interface Ethernet1/1
+  description to physec-zr-01
+  no switchport
+  mac-address fa16.3e00.0004
+  ip address 10.0.128.2/30
+  ip router ospf 65520 area 0.0.0.0
+  no shutdown
+
+interface Ethernet1/2
+  description to stesu-vmhost-01
+  no switchport
+  mac-address fa16.3e00.0005
+  ip address 10.0.0.18/29
+  ip router ospf 65520 area 0.0.0.0
+  no shutdown
+
+interface Ethernet1/3
+  description to c93108-stesu-physec-tor4
+  switchport mode trunk
+  channel-group 99
+
+interface Ethernet1/4
+  description to c93108-stesu-physec-tor4
+  switchport mode trunk
+  channel-group 99
+
+interface Ethernet1/5
+  description Ethernet1/5
+  no switchport
+  mac-address fa16.3e00.0008
+  no shutdown
+
+interface Ethernet1/6
+  description Ethernet1/6
+  no switchport
+  mac-address fa16.3e00.0009
+  no shutdown
+
+interface Ethernet1/7
+  description Ethernet1/7
+  no switchport
+  mac-address fa16.3e00.000a
+  no shutdown
+
+interface Ethernet1/8
+  description to vmHost-L2
+  no switchport
+  mac-address fa16.3e00.000b
+  ip address 10.0.0.3/29
+  ip router ospf 65520 area 0.0.0.0
+  no shutdown
+
+interface Ethernet1/9
+
+interface Ethernet1/10
+
+interface Ethernet1/11
+
+interface Ethernet1/12
+
+interface Ethernet1/13
+
+interface Ethernet1/14
+
+interface Ethernet1/15
+
+interface Ethernet1/16
+
+interface Ethernet1/17
+
+interface Ethernet1/18
+
+interface Ethernet1/19
+
+interface Ethernet1/20
+
+interface Ethernet1/21
+
+interface Ethernet1/22
+
+interface Ethernet1/23
+
+interface Ethernet1/24
+
+interface Ethernet1/25
+
+interface Ethernet1/26
+
+interface Ethernet1/27
+
+interface Ethernet1/28
+
+interface Ethernet1/29
+
+interface Ethernet1/30
+
+interface Ethernet1/31
+
+interface Ethernet1/32
+
+interface Ethernet1/33
+
+interface Ethernet1/34
+
+interface Ethernet1/35
+
+interface Ethernet1/36
+
+interface Ethernet1/37
+
+interface Ethernet1/38
+
+interface Ethernet1/39
+
+interface Ethernet1/40
+
+interface Ethernet1/41
+
+interface Ethernet1/42
+
+interface Ethernet1/43
+
+interface Ethernet1/44
+
+interface Ethernet1/45
+
+interface Ethernet1/46
+
+interface Ethernet1/47
+
+interface Ethernet1/48
+
+interface Ethernet1/49
+
+interface Ethernet1/50
+
+interface Ethernet1/51
+
+interface Ethernet1/52
+
+interface Ethernet1/53
+
+interface Ethernet1/54
+
+interface Ethernet1/55
+
+interface Ethernet1/56
+
+interface Ethernet1/57
+
+interface Ethernet1/58
+
+interface Ethernet1/59
+
+interface Ethernet1/60
+
+interface Ethernet1/61
+
+interface Ethernet1/62
+
+interface Ethernet1/63
+
+interface Ethernet1/64
+
+interface mgmt0
+  description OOB Management
+  vrf member management
+  ip address 172.16.1.136/24
+
+interface loopback0
+  description Loopback
+  ip address 192.168.50.231/32
+  ip router ospf 65520 area 0.0.0.0
+  ip pim sparse-mode
+
+interface loopback1
+  ip address 192.168.254.231/32
+  ip router ospf 65520 area 0.0.0.0
+  ip pim sparse-mode
+line console
+line vty
+router ospf 65520
+  router-id 192.168.50.231
+router bgp 65520
+  router-id 192.168.50.231
+  address-family ipv4 unicast
+    network 192.168.50.231/32
+  address-family l2vpn evpn
+  neighbor 192.168.50.129
+    remote-as 65520
+    update-source loopback0
+    address-family ipv4 unicast
+    address-family ipv6 unicast
+    address-family l2vpn evpn
+      allowas-in 3
+      send-community
+      send-community extended
+  vrf physec
+    address-family ipv4 unicast
+      advertise l2vpn evpn
+    address-family ipv6 unicast
+      advertise l2vpn evpn
+evpn
+  vni 1002201 l2
+    rd auto
+    route-target import auto
+    route-target export auto</entry>
+        </extensions>
+        <interface id="0" name="Ethernet1/1" ipv4="10.0.128.2" netPrefixLenV4="30"/>
+        <interface id="1" name="Ethernet1/2"/>
+        <interface id="2" name="Ethernet1/3" ipv4="10.0.0.25" netPrefixLenV4="30"/>
+        <interface id="3" name="Ethernet1/4" ipv4="10.0.0.29" netPrefixLenV4="30"/>
+        <interface id="4" name="Ethernet1/5"/>
+        <interface id="5" name="Ethernet1/6"/>
+        <interface id="6" name="Ethernet1/7"/>
+        <interface id="7" name="Ethernet1/8" ipv4="10.0.0.3" netPrefixLenV4="29"/>
+    </node>
+    <node name="c93108-stesu-physec-tor4" type="SIMPLE" subtype="NX-OSv 9000" location="292,146" ipv4="192.168.50.232">
+        <extensions>
+            <entry key="AutoNetkit.mgmt_ip" type="string"></entry>
+            <entry key="AutoNetkit.ASN" type="Integer">65520</entry>
+            <entry key="AutoNetkit.IGP" type="String">ospf</entry>
+            <entry key="AutoNetkit.ibgp_role" type="String">RRC</entry>
+            <entry key="config" type="String">!Command: show running-config
+!Time: Tue Jun  5 22:16:11 2018
+
+version 7.0(3)I7(1)
+hostname c93108-stesu-physec-tor4
+vdc c93108-stesu-physec-tor4 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource u4route-mem minimum 96 maximum 96
+  limit-resource u6route-mem minimum 24 maximum 24
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+feature telnet
+feature ospf
+feature bgp
+
+no password strength-check
+username admin password 5 $1$KuOSBsvW$Cy0TSD..gEBGBPjzpDgf51  role network-admin
+username adminbackup password 5 !  role network-operator
+username cisco password 5 $1$Nk7ZkwH0$fyiRmMMfIheqE3BqvcL0C1  role network-operator
+username cisco role network-admin
+username lab password 5 $1$buoy/oqy$.EXQz8rCn72ii8qtdldj00  role network-admin
+ip domain-lookup
+snmp-server user lab network-admin auth md5 0x5ceb414591539ee35159fca86fdfa101 priv 0x5ceb414591539ee35159fca86fdfa101 localizedkey
+snmp-server user admin network-admin auth md5 0x328945d53e05e8e7207f8c20b142f0b7 priv 0x328945d53e05e8e7207f8c20b142f0b7 localizedkey
+snmp-server user cisco network-operator auth md5 0x55b3c64a53fb95518e75358ee75e82e9 priv 0x55b3c64a53fb95518e75358ee75e82e9 localizedkey
+rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
+rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
+rmon event 4 log trap public description WARNING(4) owner PMON@WARNING
+rmon event 5 log trap public description INFORMATION(5) owner PMON@INFO
+
+vlan 1
+
+vrf context management
+hardware forwarding unicast trace
+
+
+interface port-channel99
+  switchport mode trunk
+
+interface Ethernet1/1
+  description to stesu-vmhost-01
+  no switchport
+  mac-address fa16.3e00.000d
+  ip address 10.0.0.19/29
+  ip router ospf 65520 area 0.0.0.0
+  no shutdown
+
+interface Ethernet1/2
+  description to physec-zr-01
+  no switchport
+  mac-address fa16.3e00.000e
+  ip address 10.0.128.6/30
+  ip router ospf 65520 area 0.0.0.0
+  no shutdown
+
+interface Ethernet1/3
+  description to c93108-stesu-physec-tor3
+  switchport mode trunk
+  channel-group 99
+
+interface Ethernet1/4
+  description to c93108-stesu-physec-tor3
+  switchport mode trunk
+  channel-group 99
+
+interface Ethernet1/5
+  description Ethernet1/5
+  no switchport
+  mac-address fa16.3e00.0011
+  no shutdown
+
+interface Ethernet1/6
+  description Ethernet1/6
+  no switchport
+  mac-address fa16.3e00.0012
+  no shutdown
+
+interface Ethernet1/7
+  description Ethernet1/7
+  no switchport
+  mac-address fa16.3e00.0013
+  no shutdown
+
+interface Ethernet1/8
+  description to vmHost-L2
+  no switchport
+  mac-address fa16.3e00.0014
+  ip address 10.0.0.4/29
+  ip router ospf 65520 area 0.0.0.0
+  no shutdown
+
+interface Ethernet1/9
+
+interface Ethernet1/10
+
+interface Ethernet1/11
+
+interface Ethernet1/12
+
+interface Ethernet1/13
+
+interface Ethernet1/14
+
+interface Ethernet1/15
+
+interface Ethernet1/16
+
+interface Ethernet1/17
+
+interface Ethernet1/18
+
+interface Ethernet1/19
+
+interface Ethernet1/20
+
+interface Ethernet1/21
+
+interface Ethernet1/22
+
+interface Ethernet1/23
+
+interface Ethernet1/24
+
+interface Ethernet1/25
+
+interface Ethernet1/26
+
+interface Ethernet1/27
+
+interface Ethernet1/28
+
+interface Ethernet1/29
+
+interface Ethernet1/30
+
+interface Ethernet1/31
+
+interface Ethernet1/32
+
+interface Ethernet1/33
+
+interface Ethernet1/34
+
+interface Ethernet1/35
+
+interface Ethernet1/36
+
+interface Ethernet1/37
+
+interface Ethernet1/38
+
+interface Ethernet1/39
+
+interface Ethernet1/40
+
+interface Ethernet1/41
+
+interface Ethernet1/42
+
+interface Ethernet1/43
+
+interface Ethernet1/44
+
+interface Ethernet1/45
+
+interface Ethernet1/46
+
+interface Ethernet1/47
+
+interface Ethernet1/48
+
+interface Ethernet1/49
+
+interface Ethernet1/50
+
+interface Ethernet1/51
+
+interface Ethernet1/52
+
+interface Ethernet1/53
+
+interface Ethernet1/54
+
+interface Ethernet1/55
+
+interface Ethernet1/56
+
+interface Ethernet1/57
+
+interface Ethernet1/58
+
+interface Ethernet1/59
+
+interface Ethernet1/60
+
+interface Ethernet1/61
+
+interface Ethernet1/62
+
+interface Ethernet1/63
+
+interface Ethernet1/64
+
+interface mgmt0
+  description OOB Management
+  vrf member management
+  ip address 172.16.1.137/24
+
+interface loopback0
+  description Loopback
+  ip address 192.168.50.232/32
+  ip router ospf 65520 area 0.0.0.0
+line console
+line vty
+router ospf 65520
+  router-id 192.168.50.232
+router bgp 65520
+  router-id 192.168.50.232
+  address-family ipv4 unicast
+    network 192.168.50.232/32</entry>
+        </extensions>
+        <interface id="0" name="Ethernet1/1"/>
+        <interface id="1" name="Ethernet1/2" ipv4="10.0.128.6" netPrefixLenV4="30"/>
+        <interface id="2" name="Ethernet1/3" ipv4="10.0.0.26" netPrefixLenV4="30"/>
+        <interface id="3" name="Ethernet1/4" ipv4="10.0.0.30" netPrefixLenV4="30"/>
+        <interface id="4" name="Ethernet1/5"/>
+        <interface id="5" name="Ethernet1/6"/>
+        <interface id="6" name="Ethernet1/7"/>
+        <interface id="7" name="Ethernet1/8" ipv4="10.0.0.4" netPrefixLenV4="29"/>
+    </node>
+    <node name="server-3" type="SIMPLE" subtype="server" location="100,379" ipv4="10.247.58.10">
+        <extensions>
+            <entry key="config" type="String">#cloud-config
+bootcmd:
+- ln -s -t /etc/rc.d /etc/rc.local
+hostname: server-3
+manage_etc_hosts: true
+runcmd:
+- start ttyS0
+- systemctl start getty@ttyS0.service
+- systemctl start rc-local
+- sed -i '/^\s*PasswordAuthentication\s\+no/d' /etc/ssh/sshd_config
+- echo "UseDNS no" &gt;&gt; /etc/ssh/sshd_config
+- service ssh restart
+- service sshd restart
+users:
+- default
+- gecos: User configured by VIRL Configuration Engine 0.23.10
+  lock-passwd: false
+  name: cisco
+  plain-text-passwd: cisco
+  shell: /bin/bash
+  ssh-authorized-keys:
+  - VIRL-USER-SSH-PUBLIC-KEY
+  sudo: ALL=(ALL) ALL
+write_files:
+- path: /etc/init/ttyS0.conf
+  owner: root:root
+  content: |
+    # ttyS0 - getty
+    # This service maintains a getty on ttyS0 from the point the system is
+    # started until it is shut down again.
+    start on stopped rc or RUNLEVEL=[12345]
+    stop on runlevel [!12345]
+    respawn
+    exec /sbin/getty -L 115200 ttyS0 vt102
+  permissions: '0644'
+- path: /etc/systemd/system/dhclient@.service
+  content: |
+    [Unit]
+    Description=Run dhclient on %i interface
+    After=network.target
+    [Service]
+    Type=oneshot
+    ExecStart=/sbin/dhclient %i -pf /var/run/dhclient.%i.pid -lf /var/lib/dhclient/dhclient.%i.lease
+    RemainAfterExit=yes
+  owner: root:root
+  permissions: '0644'
+- path: /etc/rc.local
+  owner: root:root
+  permissions: '0755'
+  content: |-
+    #!/bin/sh
+    ifconfig eth1 up 10.0.0.1 netmask 255.255.255.248
+    route add -host 192.168.50.129 gw 10.0.0.3 dev eth1
+    route add -host 192.168.50.223 gw 10.0.0.3 dev eth1
+    route add -host 192.168.50.231 gw 10.0.0.3 dev eth1
+    route add -host 192.168.50.232 gw 10.0.0.3 dev eth1
+    route add -net 10.0.0.0/27 gw 10.0.0.3 dev eth1
+    route add -net 10.0.128.0/29 gw 10.0.0.3 dev eth1
+    route add -host 192.168.50.129 gw 10.0.0.4 dev eth1
+    route add -host 192.168.50.223 gw 10.0.0.4 dev eth1
+    route add -host 192.168.50.231 gw 10.0.0.4 dev eth1
+    route add -host 192.168.50.232 gw 10.0.0.4 dev eth1
+    route add -net 10.0.0.0/27 gw 10.0.0.4 dev eth1
+    route add -net 10.0.128.0/29 gw 10.0.0.4 dev eth1
+    exit 0
+</entry>
+        </extensions>
+        <interface id="0" name="eth1" ipv4="10.0.0.1" netPrefixLenV4="29"/>
+    </node>
+    <node name="server-4" type="SIMPLE" subtype="server" location="284,398" ipv4="10.247.58.20">
+        <extensions>
+            <entry key="AutoNetkit.ASN" type="Integer">655</entry>
+            <entry key="config" type="String">#cloud-config
+bootcmd:
+- ln -s -t /etc/rc.d /etc/rc.local
+hostname: server-4
+manage_etc_hosts: true
+runcmd:
+- start ttyS0
+- systemctl start getty@ttyS0.service
+- systemctl start rc-local
+- sed -i '/^\s*PasswordAuthentication\s\+no/d' /etc/ssh/sshd_config
+- echo "UseDNS no" &gt;&gt; /etc/ssh/sshd_config
+- service ssh restart
+- service sshd restart
+users:
+- default
+- gecos: User configured by VIRL Configuration Engine 0.23.10
+  lock-passwd: false
+  name: cisco
+  plain-text-passwd: cisco
+  shell: /bin/bash
+  ssh-authorized-keys:
+  - VIRL-USER-SSH-PUBLIC-KEY
+  sudo: ALL=(ALL) ALL
+write_files:
+- path: /etc/init/ttyS0.conf
+  owner: root:root
+  content: |
+    # ttyS0 - getty
+    # This service maintains a getty on ttyS0 from the point the system is
+    # started until it is shut down again.
+    start on stopped rc or RUNLEVEL=[12345]
+    stop on runlevel [!12345]
+    respawn
+    exec /sbin/getty -L 115200 ttyS0 vt102
+  permissions: '0644'
+- path: /etc/systemd/system/dhclient@.service
+  content: |
+    [Unit]
+    Description=Run dhclient on %i interface
+    After=network.target
+    [Service]
+    Type=oneshot
+    ExecStart=/sbin/dhclient %i -pf /var/run/dhclient.%i.pid -lf /var/lib/dhclient/dhclient.%i.lease
+    RemainAfterExit=yes
+  owner: root:root
+  permissions: '0644'
+- path: /etc/rc.local
+  owner: root:root
+  permissions: '0755'
+  content: |-
+    #!/bin/sh
+    ifconfig eth1 up 10.0.0.2 netmask 255.255.255.248
+    route add -host 192.168.50.129 gw 10.0.0.3 dev eth1
+    route add -host 192.168.50.223 gw 10.0.0.3 dev eth1
+    route add -host 192.168.50.231 gw 10.0.0.3 dev eth1
+    route add -host 192.168.50.232 gw 10.0.0.3 dev eth1
+    route add -net 10.0.0.0/27 gw 10.0.0.3 dev eth1
+    route add -net 10.0.128.0/29 gw 10.0.0.3 dev eth1
+    route add -host 192.168.50.129 gw 10.0.0.4 dev eth1
+    route add -host 192.168.50.223 gw 10.0.0.4 dev eth1
+    route add -host 192.168.50.231 gw 10.0.0.4 dev eth1
+    route add -host 192.168.50.232 gw 10.0.0.4 dev eth1
+    route add -net 10.0.0.0/27 gw 10.0.0.4 dev eth1
+    route add -net 10.0.128.0/29 gw 10.0.0.4 dev eth1
+    exit 0
+</entry>
+        </extensions>
+        <interface id="0" name="eth1" ipv4="10.0.0.2" netPrefixLenV4="29"/>
+    </node>
+    <node name="vmHost-L2" type="SIMPLE" subtype="IOSvL2" location="230,243" ipv4="192.168.50.230">
+        <extensions>
+            <entry key="AutoNetkit.mgmt_ip" type="string"></entry>
+            <entry key="AutoNetkit.IGP" type="String">ospf</entry>
+            <entry key="AutoNetkit.ASN" type="Integer">65520</entry>
+            <entry key="AutoNetkit.ibgp_role" type="String">RRC</entry>
+            <entry key="config" type="String">!
+! Last configuration change at 15:28:37 UTC Fri May 25 2018
+!
+version 15.2
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+service compress-config
+!
+hostname vmHost-L2
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition Mgmt-intf
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family ipv6
+ exit-address-family
+!
+enable password cisco
+!
+no aaa new-model
+!
+!
+!
+!
+!
+vtp domain virl.lab
+vtp mode transparent
+!
+!
+!
+no ip domain-lookup
+ip cef
+no ipv6 cef
+!
+!
+!
+spanning-tree mode pvst
+spanning-tree extend system-id
+!
+vlan internal allocation policy ascending
+!
+vlan 2
+ name ank_vlan2
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ description Loopback
+ no ip address
+!
+interface GigabitEthernet0/0
+ description OOB management
+ no switchport
+ vrf forwarding Mgmt-intf
+ ip address 172.16.1.143 255.255.255.0
+ negotiation auto
+!
+interface GigabitEthernet0/1
+ description to c93108-stesu-physec-tor3
+ switchport access vlan 2
+ switchport mode access
+ media-type rj45
+ negotiation auto
+!
+interface GigabitEthernet0/2
+ description to c93108-stesu-physec-tor4
+ switchport access vlan 2
+ switchport mode access
+ media-type rj45
+ negotiation auto
+!
+interface GigabitEthernet0/3
+ description to server-3
+ switchport access vlan 2
+ switchport mode access
+ media-type rj45
+ negotiation auto
+!
+interface GigabitEthernet1/0
+ description to server-4
+ switchport access vlan 2
+ switchport mode access
+ media-type rj45
+ negotiation auto
+!
+interface GigabitEthernet1/1
+ description to flat-1
+ switchport access vlan 2
+ switchport mode access
+ media-type rj45
+ negotiation auto
+!
+ip forward-protocol nd
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+!
+!
+control-plane
+!
+banner exec `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner incoming `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner login `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+!
+line con 0
+ password cisco
+line aux 0
+line vty 0 4
+ exec-timeout 720 0
+ password cisco
+ login
+ transport input telnet ssh
+!
+!
+end</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/1"/>
+        <interface id="1" name="GigabitEthernet0/2"/>
+        <interface id="2" name="GigabitEthernet0/3"/>
+        <interface id="3" name="GigabitEthernet1/0"/>
+        <interface id="4" name="GigabitEthernet1/1"/>
+    </node>
+    <node name="c93108-stesu-physec-dist1" type="SIMPLE" subtype="NX-OSv 9000" location="578,146" ipv4="192.168.50.223">
+        <extensions>
+            <entry key="AutoNetkit.IGP" type="String">ospf</entry>
+            <entry key="AutoNetkit.ASN" type="Integer">65520</entry>
+            <entry key="AutoNetkit.ibgp_role" type="String">RRC</entry>
+            <entry key="AutoNetkit.mgmt_ip" type="string"></entry>
+            <entry key="config" type="String">!Command: show running-config
+!Time: Tue Jun  5 22:16:15 2018
+
+version 7.0(3)I7(1)
+hostname c93108-stesu-physec-dist1
+vdc c93108-stesu-physec-dist1 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource u4route-mem minimum 96 maximum 96
+  limit-resource u6route-mem minimum 24 maximum 24
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+feature telnet
+nv overlay evpn
+feature ospf
+feature bgp
+feature pim
+feature interface-vlan
+feature vn-segment-vlan-based
+feature nv overlay
+
+no password strength-check
+username admin password 5 $1$KuOSBsvW$Cy0TSD..gEBGBPjzpDgf51  role network-admin
+username adminbackup password 5 !  role network-operator
+username cisco password 5 $1$Nk7ZkwH0$fyiRmMMfIheqE3BqvcL0C1  role network-operator
+username cisco role network-admin
+username lab password 5 $1$buoy/oqy$.EXQz8rCn72ii8qtdldj00  role network-admin
+ip domain-lookup
+snmp-server user lab network-admin auth md5 0x5ceb414591539ee35159fca86fdfa101 priv 0x5ceb414591539ee35159fca86fdfa101 localizedkey
+snmp-server user admin network-admin auth md5 0x328945d53e05e8e7207f8c20b142f0b7 priv 0x328945d53e05e8e7207f8c20b142f0b7 localizedkey
+snmp-server user cisco network-operator auth md5 0x55b3c64a53fb95518e75358ee75e82e9 priv 0x55b3c64a53fb95518e75358ee75e82e9 localizedkey
+rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
+rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
+rmon event 4 log trap public description WARNING(4) owner PMON@WARNING
+rmon event 5 log trap public description INFORMATION(5) owner PMON@INFO
+
+fabric forwarding anycast-gateway-mac 2020.0000.00aa
+ip pim ssm range 232.0.0.0/8
+vlan 1,2200-2201
+vlan 2200
+  vn-segment 10002200
+vlan 2201
+  name hqsrvcore
+  vn-segment 1002201
+
+vrf context management
+vrf context physec
+  vni 10002200
+  rd auto
+  address-family ipv4 unicast
+    route-target both auto
+    route-target both auto evpn
+  address-family ipv6 unicast
+    route-target both auto
+    route-target both auto evpn
+hardware forwarding unicast trace
+
+
+interface Vlan1
+
+interface Vlan2200
+  no shutdown
+  vrf member physec
+  no ip redirects
+  ip forward
+
+interface Vlan2201
+  no shutdown
+  vrf member physec
+  ip address 10.247.58.1/24
+  fabric forwarding mode anycast-gateway
+
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback1
+  member vni 1002201
+    mcast-group 231.10.22.1
+  member vni 10002200 associate-vrf
+
+interface Ethernet1/1
+  description to physec-zr-01
+  no switchport
+  mac-address fa16.3e00.0001
+  medium p2p
+  ip address 10.0.128.9/31
+  ip router ospf 65520 area 0.0.0.0
+  ip pim sparse-mode
+  no shutdown
+
+interface Ethernet1/2
+  description to stesu-vmhost-01
+  switchport mode trunk
+  switchport access vlan 2201
+  spanning-tree port type edge trunk
+
+interface Ethernet1/3
+
+interface Ethernet1/4
+
+interface Ethernet1/5
+
+interface Ethernet1/6
+
+interface Ethernet1/7
+
+interface Ethernet1/8
+
+interface Ethernet1/9
+
+interface Ethernet1/10
+
+interface Ethernet1/11
+
+interface Ethernet1/12
+
+interface Ethernet1/13
+
+interface Ethernet1/14
+
+interface Ethernet1/15
+
+interface Ethernet1/16
+
+interface Ethernet1/17
+
+interface Ethernet1/18
+
+interface Ethernet1/19
+
+interface Ethernet1/20
+
+interface Ethernet1/21
+
+interface Ethernet1/22
+
+interface Ethernet1/23
+
+interface Ethernet1/24
+
+interface Ethernet1/25
+
+interface Ethernet1/26
+
+interface Ethernet1/27
+
+interface Ethernet1/28
+
+interface Ethernet1/29
+
+interface Ethernet1/30
+
+interface Ethernet1/31
+
+interface Ethernet1/32
+
+interface Ethernet1/33
+
+interface Ethernet1/34
+
+interface Ethernet1/35
+
+interface Ethernet1/36
+
+interface Ethernet1/37
+
+interface Ethernet1/38
+
+interface Ethernet1/39
+
+interface Ethernet1/40
+
+interface Ethernet1/41
+
+interface Ethernet1/42
+
+interface Ethernet1/43
+
+interface Ethernet1/44
+
+interface Ethernet1/45
+
+interface Ethernet1/46
+
+interface Ethernet1/47
+
+interface Ethernet1/48
+
+interface Ethernet1/49
+
+interface Ethernet1/50
+
+interface Ethernet1/51
+
+interface Ethernet1/52
+
+interface Ethernet1/53
+
+interface Ethernet1/54
+
+interface Ethernet1/55
+
+interface Ethernet1/56
+
+interface Ethernet1/57
+
+interface Ethernet1/58
+
+interface Ethernet1/59
+
+interface Ethernet1/60
+
+interface Ethernet1/61
+
+interface Ethernet1/62
+
+interface Ethernet1/63
+
+interface Ethernet1/64
+
+interface mgmt0
+  description OOB Management
+  vrf member management
+  ip address 172.16.1.135/24
+
+interface loopback0
+  description Loopback
+  ip address 192.168.50.223/32
+  ip router ospf 65520 area 0.0.0.0
+  ip pim sparse-mode
+
+interface loopback1
+  ip address 192.168.254.223/32
+line console
+line vty
+router ospf 65520
+  router-id 192.168.50.223
+router bgp 65520
+  router-id 192.168.50.223
+  address-family ipv4 unicast
+    network 192.168.50.223/32
+  address-family l2vpn evpn
+  neighbor 192.168.50.129
+    remote-as 65520
+    update-source loopback0
+    address-family ipv4 unicast
+    address-family ipv6 unicast
+    address-family l2vpn evpn
+      allowas-in 3
+      send-community
+      send-community extended
+  vrf physec
+    address-family ipv4 unicast
+      advertise l2vpn evpn
+    address-family ipv6 unicast
+      advertise l2vpn evpn
+evpn
+  vni 1002201 l2
+    rd auto
+    route-target import auto
+    route-target export auto</entry>
+        </extensions>
+        <interface id="0" name="Ethernet1/1" ipv4="10.0.0.14" netPrefixLenV4="30"/>
+        <interface id="1" name="Ethernet1/2" ipv4="10.0.0.17" netPrefixLenV4="29"/>
+    </node>
+    <node name="ccure_mas" type="SIMPLE" subtype="server" location="621,446">
+        <extensions>
+            <entry key="AutoNetkit.IGP" type="String">ospf</entry>
+            <entry key="AutoNetkit.ASN" type="Integer">65520</entry>
+            <entry key="config" type="String">#cloud-config
+bootcmd:
+- ln -s -t /etc/rc.d /etc/rc.local
+hostname: ccure_mas
+manage_etc_hosts: true
+runcmd:
+- start ttyS0
+- systemctl start getty@ttyS0.service
+- systemctl start rc-local
+- sed -i '/^\s*PasswordAuthentication\s\+no/d' /etc/ssh/sshd_config
+- echo "UseDNS no" &gt;&gt; /etc/ssh/sshd_config
+- service ssh restart
+- service sshd restart
+users:
+- default
+- gecos: User configured by VIRL Configuration Engine 0.23.10
+  lock-passwd: false
+  name: cisco
+  plain-text-passwd: cisco
+  shell: /bin/bash
+  ssh-authorized-keys:
+  - VIRL-USER-SSH-PUBLIC-KEY
+  sudo: ALL=(ALL) ALL
+write_files:
+- path: /etc/init/ttyS0.conf
+  owner: root:root
+  content: |
+    # ttyS0 - getty
+    # This service maintains a getty on ttyS0 from the point the system is
+    # started until it is shut down again.
+    start on stopped rc or RUNLEVEL=[12345]
+    stop on runlevel [!12345]
+    respawn
+    exec /sbin/getty -L 115200 ttyS0 vt102
+  permissions: '0644'
+- path: /etc/systemd/system/dhclient@.service
+  content: |
+    [Unit]
+    Description=Run dhclient on %i interface
+    After=network.target
+    [Service]
+    Type=oneshot
+    ExecStart=/sbin/dhclient %i -pf /var/run/dhclient.%i.pid -lf /var/lib/dhclient/dhclient.%i.lease
+    RemainAfterExit=yes
+  owner: root:root
+  permissions: '0644'
+- path: /etc/rc.local
+  owner: root:root
+  permissions: '0755'
+  content: |-
+    #!/bin/sh
+    ifconfig eth1 up 10.0.0.9 netmask 255.255.255.252
+    exit 0
+</entry>
+        </extensions>
+        <interface id="0" name="eth1" ipv4="10.0.0.9" netPrefixLenV4="30">
+            <extensions>
+                <entry key="AutoNetkit.vlan" type="Integer">2201</entry>
+            </extensions>
+        </interface>
+    </node>
+    <node name="stesu-vmhost-01" type="SIMPLE" subtype="IOSvL2" location="622,305" ipv4="192.168.50.230">
+        <extensions>
+            <entry key="AutoNetkit.mgmt_ip" type="string"></entry>
+            <entry key="AutoNetkit.IGP" type="String">ospf</entry>
+            <entry key="AutoNetkit.ASN" type="Integer">65520</entry>
+            <entry key="AutoNetkit.ibgp_role" type="String">RRC</entry>
+            <entry key="config" type="String">!
+! Last configuration change at 12:52:09 UTC Mon Jun 4 2018
+!
+version 15.2
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+service compress-config
+!
+hostname stesu-vmhost-01
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition Mgmt-intf
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family ipv6
+ exit-address-family
+!
+enable password cisco
+!
+no aaa new-model
+!
+!
+!
+!
+!
+vtp domain virl.lab
+vtp mode transparent
+!
+!
+!
+no ip domain-lookup
+ip cef
+no ipv6 cef
+!
+!
+!
+spanning-tree mode pvst
+spanning-tree extend system-id
+!
+vlan internal allocation policy ascending
+!
+vlan 2
+ name ank_vlan2
+!
+vlan 2201
+ name hqsrvcore
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ description Loopback
+ no ip address
+!
+interface GigabitEthernet0/0
+ description OOB management
+ no switchport
+ vrf forwarding Mgmt-intf
+ ip address 172.16.1.142 255.255.255.0
+ negotiation auto
+!
+interface GigabitEthernet0/1
+ description to ccure_mas
+ switchport access vlan 2201
+ switchport mode access
+ media-type rj45
+ negotiation auto
+!
+interface GigabitEthernet0/2
+ description to c93108-stesu-physec-tor4
+ switchport access vlan 2
+ switchport mode access
+ media-type rj45
+ negotiation auto
+!
+interface GigabitEthernet0/3
+ description to c93108-stesu-physec-tor3
+ switchport access vlan 2
+ switchport mode access
+ media-type rj45
+ negotiation auto
+!
+interface GigabitEthernet1/0
+ description to c93108-stesu-physec-dist1
+ switchport access vlan 2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ media-type rj45
+ negotiation auto
+!
+interface GigabitEthernet1/1
+ description to flat-2
+ switchport access vlan 2
+ switchport mode access
+ media-type rj45
+ negotiation auto
+!
+interface Vlan2201
+ ip address 10.247.58.5 255.255.255.0
+!
+ip forward-protocol nd
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+!
+!
+control-plane
+!
+banner exec `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner incoming `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner login `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+!
+line con 0
+ password cisco
+line aux 0
+line vty 0 4
+ exec-timeout 720 0
+ password cisco
+ login
+ transport input telnet ssh
+!
+!
+end</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/1"/>
+        <interface id="1" name="GigabitEthernet0/2"/>
+        <interface id="2" name="GigabitEthernet0/3"/>
+        <interface id="3" name="GigabitEthernet1/0"/>
+        <interface id="4" name="GigabitEthernet1/1"/>
+    </node>
+    <annotations/>
+    <connection dst="/virl:topology/virl:node[1]/virl:interface[1]" src="/virl:topology/virl:node[2]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[3]/virl:interface[3]" src="/virl:topology/virl:node[2]/virl:interface[3]"/>
+    <connection dst="/virl:topology/virl:node[3]/virl:interface[4]" src="/virl:topology/virl:node[2]/virl:interface[4]"/>
+    <connection dst="/virl:topology/virl:node[1]/virl:interface[7]" src="/virl:topology/virl:node[3]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[2]/virl:interface[8]" src="/virl:topology/virl:node[6]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[3]/virl:interface[8]" src="/virl:topology/virl:node[6]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[6]/virl:interface[3]" src="/virl:topology/virl:node[4]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[6]/virl:interface[4]" src="/virl:topology/virl:node[5]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[7]/virl:interface[1]" src="/virl:topology/virl:node[1]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[8]/virl:interface[1]" src="/virl:topology/virl:node[9]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[7]/virl:interface[2]" src="/virl:topology/virl:node[9]/virl:interface[4]"/>
+</topology>
